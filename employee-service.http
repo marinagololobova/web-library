@@ -1,11 +1,26 @@
 ### Получение суммы зарплат сотрудников
-GET http://localhost:8080/employee/salary/sum
+GET http://localhost:8080/employees/salary/sum
 
 ### Получение сотрудника с минимальной зарплатой
-GET http://localhost:8080/employee/salary/min
+GET http://localhost:8080/employees/salary/min
 
 ### Получение сотрудника с максимальной зарплатой
-GET http://localhost:8080/employee/salary/max
+GET http://localhost:8080/employees/salary/max
 
 ### Получение всех сотрудников, зарплата которых больше средней
-GET http://localhost:8080/employee/salary/high-salary
+GET http://localhost:8080/employees/salary/high-salary
+
+### Добавление новых сотрудников
+POST http://localhost:8080/employees/
+
+### Изменить сотрудника по id
+PUT http://localhost:8080/employees/{id}
+
+### Получить сотрудникa по id
+GET http://localhost:8080/employees/{id}
+
+### Удалить сотрудникa по id
+DELETE http://localhost:8080/employees/{id}
+
+### Получить всех сотрудников, зарплата которых выше переданного параметра salary
+GET http://localhost:8080/employees/salaryHigherThan?compareSalary=

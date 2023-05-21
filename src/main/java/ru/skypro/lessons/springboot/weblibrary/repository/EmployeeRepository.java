@@ -10,4 +10,10 @@ public interface EmployeeRepository {
     public List<Employee> showEmployeeSalaryMin();
     public List<Employee> showEmployeeSalaryMax();
     public List<Employee> showEmployeesSalaryAboveAverage();
+
+    public void addEmployees(Employee employee);
+    public void editEmployees(Employee employee);
+    public Employee getEmployeeById(Integer id);
+    public void deleteEmployeeById(Integer id);
+    public List<Employee> getEmployeesWithSalaryHigherThan(double compareSalary);
 }

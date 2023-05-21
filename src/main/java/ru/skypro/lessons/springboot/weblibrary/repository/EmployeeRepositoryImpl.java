@@ -3,17 +3,22 @@ package ru.skypro.lessons.springboot.weblibrary.repository;
 import org.springframework.stereotype.Repository;
 import ru.skypro.lessons.springboot.weblibrary.pojo.Employee;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Repository
 public class EmployeeRepositoryImpl implements EmployeeRepository {
-    private final List<Employee> employeeList = List.of(
-            new Employee("Катя", 90_000),
-            new Employee("Дима", 102_000),
-            new Employee("Олег", 80_000),
-            new Employee("Вика", 165_000));
+    private final List<Employee> employeeList;
+
+    {
+        employeeList = new ArrayList<>();
+        employeeList.add(new Employee(1, "Катя", 90000));
+        employeeList.add(new Employee(2, "Дима", 102000));
+        employeeList.add(new Employee(3, "Олег", 80000));
+        employeeList.add(new Employee(4, "Вика", 165000));
+    }
     @Override
     public List<Employee> getAllEmployees() {
         return employeeList;
@@ -21,11 +26,9 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 
     @Override
     public double showSumSalary() {
-        double sum = 0;
-        for (Employee employee : employeeList) {
-            sum += employee.getSalary();
-        }
-        return sum;
+        return employeeList.stream()
+                .mapToDouble(Employee::getSalary)
+                .sum();
     }
 
     @Override
@@ -63,4 +66,37 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
         return employeesWithSalaryAboveAverage;
     }
 
+    @Override
+    public void addEmployees(Employee employee) {
+        employeeList.add(employee);
+
+    }
+
+    @Override
+    public void editEmployees(Employee employee) {
+        Employee employeeToBeUpdated = getEmployeeById(employee.getId());
+        employeeToBeUpdated.setName(employee.getName());
+        employeeToBeUpdated.setSalary(employee.getSalary());
+    }
+
+    @Override
+    public Employee getEmployeeById(Integer id) {
+        return employeeList.stream()
+                .filter(employee -> employee.getId() == id)
+                .findAny()
+                .orElse(null);
+    }
+
+    @Override
+    public void deleteEmployeeById(Integer id) {
+        employeeList.removeIf(employee -> employee.getId() == id);
+    }
+
+    @Override
+    public List<Employee> getEmployeesWithSalaryHigherThan(double compareSalary) {
+        List<Employee> employeesWithSalaryHigherThanPassedParameter = getAllEmployees().stream()
+                .filter(e -> compareSalary - e.getSalary() <= 0)
+                .collect(Collectors.toList());
+        return employeesWithSalaryHigherThanPassedParameter;
+    }
 }
