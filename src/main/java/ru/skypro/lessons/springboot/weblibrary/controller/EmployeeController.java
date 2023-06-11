@@ -4,7 +4,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.web.bind.annotation.*;
 import ru.skypro.lessons.springboot.weblibrary.dto.EmployeeDTO;
 import ru.skypro.lessons.springboot.weblibrary.entity.Employee;
-import ru.skypro.lessons.springboot.weblibrary.entity.Position;
 import ru.skypro.lessons.springboot.weblibrary.service.EmployeeService;
 
 import java.util.List;
@@ -24,13 +23,13 @@ public class EmployeeController {
     }
 
     @PostMapping
-    public void addEmployees(@RequestBody Employee employee) {
-        employeeService.addEmployee(employee);
+    public void addEmployees(@RequestBody EmployeeDTO employeeDTO) {
+        employeeService.addEmployee(employeeDTO);
     }
 
     @PutMapping("/{id}")
-    public void editEmployees(@RequestBody Employee employee){
-        employeeService.editEmployees(employee);
+    public void editEmployees(@RequestBody EmployeeDTO employeeDTO){
+        employeeService.editEmployees(employeeDTO);
     }
 
     @GetMapping("/{id}")
@@ -47,22 +46,22 @@ public class EmployeeController {
 
 
     @GetMapping("/withHighestSalary")
-    public List<EmployeeDTO> showEmployeesSalaryMax() {
+    public List<Employee> showEmployeesSalaryMax() {
         return employeeService.findEmployeesWithHighestSalary();
     }
 
     @GetMapping()
-    public List<EmployeeDTO> findEmployeesByPosition(@RequestParam(required = false, defaultValue = "0") Position position) {
+    public List<Employee> findEmployeesByPosition(@RequestParam(required = false, defaultValue = "position_id") String position) {
         return employeeService.findEmployeesByPosition(position);
     }
 
     @GetMapping("/{id}/fullInfo")
-    public EmployeeDTO findEmployeeById(@PathVariable Integer id){
+    public Employee findEmployeeById(@PathVariable Integer id){
         return employeeService.findEmployeeById(id);
     }
 
     @GetMapping("/page")
-    public List <Employee> getEmployeeWithPaging(@RequestParam(required = false, defaultValue = "0") int page,
+    public List <EmployeeDTO> getEmployeeWithPaging(@RequestParam(required = false, defaultValue = "0") int page,
                                                     @RequestParam(required = false, defaultValue = "10")int size) {
         return employeeService.findAll(PageRequest.of(page, size));
     }

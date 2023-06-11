@@ -5,12 +5,12 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import ru.skypro.lessons.springboot.weblibrary.dto.EmployeeDTO;
 import ru.skypro.lessons.springboot.weblibrary.entity.Employee;
-import ru.skypro.lessons.springboot.weblibrary.entity.Position;
 import ru.skypro.lessons.springboot.weblibrary.exceptions.IncorrectEmployeeIdException;
 import ru.skypro.lessons.springboot.weblibrary.repository.EmployeeRepository;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class EmployeeServiceImpl implements EmployeeService {
@@ -23,22 +23,26 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     public List<EmployeeDTO> getAllEmployees() {
-        List<Employee> result = new ArrayList<>();
-        employeeRepository.findAll()
+        List<EmployeeDTO> result = new ArrayList<>();
+        employeeRepository.findAll().stream().map(EmployeeDTO::fromEmployee)
                 .forEach(result::add);
-        return result.stream()
-                .map(EmployeeDTO::fromEmployee)
-                .toList();
+        return result;
     }
 
     @Override
-    public void addEmployee(Employee employee) {
+    public void addEmployee(EmployeeDTO employeeDTO) {
+        Employee employee = employeeDTO.toEmployee();
         employeeRepository.save(employee);
     }
 
     @Override
-    public void editEmployees(Employee employee) {
-        employeeRepository.save(employee);
+    public void editEmployees(EmployeeDTO employeeDTO) {
+        Employee employee = employeeDTO.toEmployee();
+        try {
+            employeeRepository.save(employee);
+        } catch (IncorrectEmployeeIdException idException) {
+            throw new IncorrectEmployeeIdException(employee.getId());
+        }
     }
 
     @Override
@@ -58,25 +62,25 @@ public class EmployeeServiceImpl implements EmployeeService {
 
 
     @Override
-    public List<EmployeeDTO> findEmployeesWithHighestSalary() {
+    public List<Employee> findEmployeesWithHighestSalary() {
         return employeeRepository.findEmployeesWithHighestSalary();
     }
 
     @Override
-    public List<EmployeeDTO> findEmployeesByPosition(Position position) {
+    public List<Employee> findEmployeesByPosition(String position) {
         return employeeRepository.findEmployeesByPosition(position);
     }
 
     @Override
-    public EmployeeDTO findEmployeeById(Integer id) {
+    public Employee findEmployeeById(Integer id) {
         return employeeRepository.findEmployeeById(id);
     }
 
     @Override
-    public List<Employee> findAll(PageRequest pageRequest) {
+    public List<EmployeeDTO> findAll(PageRequest pageRequest) {
         Page<Employee> page = employeeRepository.findAll(pageRequest);
-        return page.getContent();
+        return page.getContent().stream()
+                .map(EmployeeDTO::fromEmployee)
+                .collect(Collectors.toList());
     }
-
-
 }
