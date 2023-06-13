@@ -36,12 +36,16 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
-    public void editEmployees(EmployeeDTO employeeDTO) {
+    public void editEmployees(EmployeeDTO employeeDTO) throws IncorrectEmployeeIdException{
         Employee employee = employeeDTO.toEmployee();
-        try {
+        if (findEmployeeById(employee.getId()) == null) {
+            try {
+                editEmployees(employeeDTO);
+            } catch (IncorrectEmployeeIdException idException) {
+                throw new IncorrectEmployeeIdException(employee.getId());
+            }
+        } else {
             employeeRepository.save(employee);
-        } catch (IncorrectEmployeeIdException idException) {
-            throw new IncorrectEmployeeIdException(employee.getId());
         }
     }
 

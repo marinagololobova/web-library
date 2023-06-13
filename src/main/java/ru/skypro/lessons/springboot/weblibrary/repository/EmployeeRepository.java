@@ -15,7 +15,7 @@ public interface EmployeeRepository extends JpaRepository<Employee, Integer> {
     List<Employee> findEmployeesWithHighestSalary();
 
     @Query(value = "SELECT * " +
-            "FROM employee e GROUP BY position_id",
+            "FROM employee e WHERE position_id = position_id",
             nativeQuery = true)
     List<Employee> findEmployeesByPosition(String position);
 

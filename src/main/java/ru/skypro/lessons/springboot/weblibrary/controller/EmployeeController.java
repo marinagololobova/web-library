@@ -51,7 +51,7 @@ public class EmployeeController {
     }
 
     @GetMapping()
-    public List<Employee> findEmployeesByPosition(@RequestParam(required = false, defaultValue = "position_id") String position) {
+    public List<Employee> findEmployeesByPosition(@RequestParam(required = false, defaultValue = "разработчик") String position) {
         return employeeService.findEmployeesByPosition(position);
     }
 
