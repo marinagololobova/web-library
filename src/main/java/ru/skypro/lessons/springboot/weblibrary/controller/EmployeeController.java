@@ -1,7 +1,9 @@
 package ru.skypro.lessons.springboot.weblibrary.controller;
 
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import ru.skypro.lessons.springboot.weblibrary.dto.EmployeeDTO;
 import ru.skypro.lessons.springboot.weblibrary.entity.Employee;
 import ru.skypro.lessons.springboot.weblibrary.service.EmployeeService;
@@ -23,8 +25,8 @@ public class EmployeeController {
     }
 
     @PostMapping
-    public void addEmployees(@RequestBody EmployeeDTO employeeDTO) {
-        employeeService.addEmployee(employeeDTO);
+    public void addEmployees(@RequestBody List<EmployeeDTO> employees) {
+        employeeService.addEmployee(employees);
     }
 
     @PutMapping("/{id}")
@@ -66,4 +68,10 @@ public class EmployeeController {
         return employeeService.findAll(PageRequest.of(page, size));
     }
 
+
+
+    @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public void upload(@RequestParam MultipartFile employees) {
+        employeeService.upload(employees);
+    }
 }

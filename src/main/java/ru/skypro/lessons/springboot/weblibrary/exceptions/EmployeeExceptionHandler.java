@@ -11,8 +11,13 @@ import java.sql.SQLException;
 @RestControllerAdvice
 public class EmployeeExceptionHandler {
 
-    @ExceptionHandler(value = {SQLException.class, IOException.class})
+    @ExceptionHandler(value = {SQLException.class, IOException.class, IllegalJsonFileException.class})
     public ResponseEntity<?> handleException (Exception exception) {
         return new ResponseEntity<>(exception.getMessage(), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(value = {ReportNotFoundException.class, IncorrectEmployeeIdException.class})
+    public ResponseEntity<?> notFound (Exception exception) {
+        return new ResponseEntity<>(exception.getMessage(), HttpStatus.NOT_FOUND);
     }
 }
