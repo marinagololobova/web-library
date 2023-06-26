@@ -33,6 +33,7 @@ public class SecurityConfig {
                         .hasRole(Role.ADMIN.name())
                         .requestMatchers(HttpMethod.GET,"/employees/**", "/report/**")
                         .hasAnyRole(Role.ADMIN.name(), Role.USER.name())
+                        .requestMatchers("/**").permitAll()
                 )
                 .build();
     }
