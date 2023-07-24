@@ -11,6 +11,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.PageRequest;
 import ru.skypro.lessons.springboot.weblibrary.dto.EmployeeDTO;
 import ru.skypro.lessons.springboot.weblibrary.entity.Employee;
 import ru.skypro.lessons.springboot.weblibrary.entity.Position;
@@ -24,6 +25,7 @@ import ru.skypro.lessons.springboot.weblibrary.service.JsonUtil;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.mockito.Mockito.*;
@@ -107,32 +109,68 @@ class WebLibraryApplicationTests {
 
     @Test
     public void getEmployeeById_Test(){
-        when(employeeRepository.findEmployeeById(employeeDTO.getId())).thenReturn(generateEmployee(1, null));
+        EmployeeDTO result = employeeDTO(generateEmployee(1, null));
 
-        EmployeeDTO actual = employeeServiceMock.getEmployeeById(employeeDTO.getId());
+        when(employeeRepository.findEmployeeById(any())).thenReturn(generateEmployee(1, null));
 
-        org.assertj.core.api.Assertions.assertThat(actual).isEqualTo(generateEmployee(1, null));
-        verify(employeeRepository, only()).findEmployeeById(employeeDTO.getId());
+        EmployeeDTO actual = employeeServiceMock.getEmployeeById(1);
+
+        org.assertj.core.api.Assertions.assertThat(actual).isEqualTo(result);
     }
 
-    /*@Test
-    public void deleteEmployeeById() {
-        when(employeeRepository.deleteById()).thenReturn(generateEmployee(1, null));
+    @Test
+    public void deleteEmployeeById_Test() {
+        when(employeeRepository.findEmployeeById(any())).thenReturn(isNull());
 
-        EmployeeDTO actual = employeeServiceMock.getEmployeeById(employeeDTO.getId());
+        employeeServiceMock.deleteEmployeeById(1);
 
-        org.assertj.core.api.Assertions.assertThat(actual).isEqualTo(generateEmployee(1, null));
-        verify(employeeRepository, only()).findEmployeeById(employeeDTO.getId());
-    }*/
+        verify(employeeRepository, only()).findEmployeeById(1);
+        verify(employeeRepository, only()).deleteById(1);
+    }
 
     @Test
     public void findEmployeesWithHighestSalary_Test() {
         Employee result = generateEmployee(1, null);
-        when(employeeRepository.findEmployeesWithHighestSalary(any())).thenReturn(List.of(result));
+
+        when(employeeRepository.findEmployeesWithHighestSalary()).thenReturn(List.of(result));
 
         List<Employee> actual = employeeServiceMock.findEmployeesWithHighestSalary();
+
         org.assertj.core.api.Assertions.assertThat(actual).usingRecursiveComparison().isEqualTo(result);
     }
+
+    @Test
+    public void findEmployeesByPositionTest(){
+        List<Employee> employees = Stream.iterate(1, id -> id + 1)
+                .map(id -> generateEmployee(id, id + 100))
+                .limit(5)
+                .collect(Collectors.toList());
+
+        List<Employee> expected = new ArrayList<>(employees);
+
+        when(employeeRepository.findAll()).thenReturn(employees);
+
+        List<Employee> actual = employeeServiceMock.findEmployeesByPosition(isNull());
+
+        Assertions.assertIterableEquals(expected,actual);
+
+        verify(employeeRepository, only()).findAll();
+    }
+
+    @Test
+    public void findAll_Test() {
+        List<Employee> employees = Stream.iterate(1, id -> id + 1)
+                .map(id -> generateEmployee(id, id + 100))
+                .limit(5)
+                .toList();
+        List<EmployeeDTO> expected = employees.stream()
+                .map(this::employeeDTO)
+                .collect(Collectors.toList());
+
+        when(employeeServiceMock.findAll(PageRequest.of(1, 5))).thenReturn(expected);
+    }
+
+
 
     private Employee generateEmployee(int id, Integer positionId) {
         Employee employee = new Employee();
