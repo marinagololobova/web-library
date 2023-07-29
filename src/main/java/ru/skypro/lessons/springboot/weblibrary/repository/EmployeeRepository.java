@@ -19,8 +19,6 @@ public interface EmployeeRepository extends JpaRepository<Employee, Integer> {
 
     Employee findEmployeeById(Integer id);
 
-
-
     @Query("SELECT new ru.skypro.lessons.springboot.weblibrary.dto.ReportDTO(e.position.name, count (e.id), max (e.salary), min (e.salary), avg (e.salary)) " +
             "FROM Employee e GROUP BY e.position.name")
     List<ReportDTO> createReports();

@@ -113,7 +113,7 @@ class WebLibraryApplicationTests {
 
         when(employeeRepository.findEmployeeById(any())).thenReturn(generateEmployee(1, null));
 
-        EmployeeDTO actual = employeeServiceMock.getEmployeeById(1);
+        EmployeeDTO actual = employeeServiceMock.getEmployeeById(any());
 
         org.assertj.core.api.Assertions.assertThat(actual).isEqualTo(result);
     }
@@ -140,7 +140,7 @@ class WebLibraryApplicationTests {
     }
 
     @Test
-    public void findEmployeesByPositionTest(){
+    public void findEmployeesByPosition_Test(){
         List<Employee> employees = Stream.iterate(1, id -> id + 1)
                 .map(id -> generateEmployee(id, id + 100))
                 .limit(5)
@@ -199,5 +199,4 @@ class WebLibraryApplicationTests {
         );
         return employeeDTO;
     }
-
 }
