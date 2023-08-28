@@ -45,16 +45,19 @@ class WebLibraryApplicationTests {
     private JsonUtil jsonUtil;
     @Mock
     private EmployeeDTO employeeDTO;
-
-    @InjectMocks
+    @Mock
     private EmployeeService employeeServiceMock;
+
+    //@InjectMocks
+    //private EmployeeService employeeServiceMock;
 
     private final Faker faker = new Faker();
 
 
     @BeforeEach
     public void beforeEach() {
-        lenient().when(jsonUtil.toJson(any())).thenReturn("From Mock");
+        //lenient().when(jsonUtil.toJson(any())).thenReturn("From Mock");
+        EmployeeService employeeServiceMock;
     }
 
     @Test
@@ -69,7 +72,6 @@ class WebLibraryApplicationTests {
                 .map(this::employeeDTO)
                 .forEach(expected::add);
 
-
         when(employeeServiceMock.getAllEmployees()).thenReturn(expected);
 
         verify(employeeRepository, never()).findAll();
@@ -79,7 +81,7 @@ class WebLibraryApplicationTests {
     @Test
     void addEmployee_Test() {
         EmployeeDTO result = employeeDTO(generateEmployee(1, null));
-        when(EmployeeMapper.toEmployee(any())).thenAnswer(invocationOnMock -> {
+        when(employeeRepository.save(any())).thenAnswer(invocationOnMock -> {
             EmployeeDTO argument = invocationOnMock.getArgument(0, EmployeeDTO.class);
             Employee employee = new Employee();
             employee.setName(argument.getName());
