@@ -48,8 +48,6 @@ class WebLibraryApplicationTests {
     @Mock
     private EmployeeService employeeServiceMock;
 
-    //@InjectMocks
-    //private EmployeeService employeeServiceMock;
 
     private final Faker faker = new Faker();
 
