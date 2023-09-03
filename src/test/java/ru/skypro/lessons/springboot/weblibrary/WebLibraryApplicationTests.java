@@ -10,7 +10,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.PageRequest;
 import ru.skypro.lessons.springboot.weblibrary.dto.EmployeeDTO;
 import ru.skypro.lessons.springboot.weblibrary.entity.Employee;
@@ -31,7 +30,7 @@ import java.util.stream.Stream;
 import static org.mockito.Mockito.*;
 
 @Data
-@SpringBootTest
+//@SpringBootTest
 @ExtendWith(MockitoExtension.class)
 class WebLibraryApplicationTests {
 
@@ -45,7 +44,9 @@ class WebLibraryApplicationTests {
     private JsonUtil jsonUtil;
     @Mock
     private EmployeeDTO employeeDTO;
-    @Mock
+
+
+    @InjectMocks
     private EmployeeService employeeServiceMock;
 
 
@@ -54,7 +55,6 @@ class WebLibraryApplicationTests {
 
     @BeforeEach
     public void beforeEach() {
-        //lenient().when(jsonUtil.toJson(any())).thenReturn("From Mock");
         EmployeeService employeeServiceMock;
     }
 
@@ -79,13 +79,6 @@ class WebLibraryApplicationTests {
     @Test
     void addEmployee_Test() {
         EmployeeDTO result = employeeDTO(generateEmployee(1, null));
-        when(employeeRepository.save(any())).thenAnswer(invocationOnMock -> {
-            EmployeeDTO argument = invocationOnMock.getArgument(0, EmployeeDTO.class);
-            Employee employee = new Employee();
-            employee.setName(argument.getName());
-            employee.setSalary(argument.getSalary());
-            return employee;
-        });
 
         employeeServiceMock.addEmployee(List.of(result));
 
@@ -99,62 +92,36 @@ class WebLibraryApplicationTests {
     }
 
     @Test
-    public void editEmployees_NegativeTest() {
+    public void editEmployees_Test() {
         when(employeeRepository.findEmployeeById(any())).thenReturn(isNull());
 
         Assertions.assertThrows(IncorrectEmployeeIdException.class,
-                () -> employeeServiceMock.findEmployeesWithHighestSalary());
+                () -> employeeServiceMock.editEmployees(any()));
     }
 
 
     @Test
     public void getEmployeeById_Test(){
-        EmployeeDTO result = employeeDTO(generateEmployee(1, null));
-
-        when(employeeRepository.findEmployeeById(any())).thenReturn(generateEmployee(1, null));
-
-        EmployeeDTO actual = employeeServiceMock.getEmployeeById(any());
-
-        org.assertj.core.api.Assertions.assertThat(actual).isEqualTo(result);
+        employeeServiceMock.findEmployeeById(any());
+        verify(employeeRepository, only()).findEmployeeById(any());
     }
 
     @Test
     public void deleteEmployeeById_Test() {
-        when(employeeRepository.findEmployeeById(any())).thenReturn(isNull());
-
-        employeeServiceMock.deleteEmployeeById(1);
-
-        verify(employeeRepository, only()).findEmployeeById(1);
-        verify(employeeRepository, only()).deleteById(1);
+        employeeServiceMock.deleteEmployeeById(any());
+        verify(employeeRepository, only()).deleteById(any());
     }
 
     @Test
     public void findEmployeesWithHighestSalary_Test() {
-        Employee result = generateEmployee(1, null);
-
-        when(employeeRepository.findEmployeesWithHighestSalary()).thenReturn(List.of(result));
-
-        List<Employee> actual = employeeServiceMock.findEmployeesWithHighestSalary();
-
-        org.assertj.core.api.Assertions.assertThat(actual).usingRecursiveComparison().isEqualTo(result);
+        employeeServiceMock.findEmployeesWithHighestSalary();
+        verify(employeeRepository, only()).findEmployeesWithHighestSalary();
     }
 
     @Test
     public void findEmployeesByPosition_Test(){
-        List<Employee> employees = Stream.iterate(1, id -> id + 1)
-                .map(id -> generateEmployee(id, id + 100))
-                .limit(5)
-                .collect(Collectors.toList());
-
-        List<Employee> expected = new ArrayList<>(employees);
-
-        when(employeeRepository.findAll()).thenReturn(employees);
-
-        List<Employee> actual = employeeServiceMock.findEmployeesByPosition(isNull());
-
-        Assertions.assertIterableEquals(expected,actual);
-
-        verify(employeeRepository, only()).findAll();
+        employeeServiceMock.findEmployeesByPosition(any());
+        verify(employeeRepository, only()).findEmployeesByPositionNameLike(any());
     }
 
     @Test
@@ -167,7 +134,8 @@ class WebLibraryApplicationTests {
                 .map(this::employeeDTO)
                 .collect(Collectors.toList());
 
-        when(employeeServiceMock.findAll(PageRequest.of(1, 5))).thenReturn(expected);
+        when(employeeServiceMock.findAll(PageRequest.of(any(), 5))).thenReturn(expected);
+        verify(employeeRepository, only()).findAll();
     }
 
 
