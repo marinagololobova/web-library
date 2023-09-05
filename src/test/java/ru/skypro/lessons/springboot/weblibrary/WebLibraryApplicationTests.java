@@ -10,6 +10,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import ru.skypro.lessons.springboot.weblibrary.dto.EmployeeDTO;
 import ru.skypro.lessons.springboot.weblibrary.entity.Employee;
@@ -65,14 +66,8 @@ class WebLibraryApplicationTests {
                 .limit(5)
                 .toList();
 
-        List<EmployeeDTO> expected = new ArrayList<>();
-        employees.stream()
-                .map(this::employeeDTO)
-                .forEach(expected::add);
-
-        when(employeeServiceMock.getAllEmployees()).thenReturn(expected);
-
-        verify(employeeRepository, never()).findAll();
+        when(employeeRepository.findAll()).thenReturn(employees);
+        employeeServiceMock.getAllEmployees();
 
     }
 
@@ -93,10 +88,19 @@ class WebLibraryApplicationTests {
 
     @Test
     public void editEmployees_Test() {
+        Employee result = (generateEmployee(1, null));
+
+        EmployeeDTO expected = employeeDTO(result);
+
+
         when(employeeRepository.findEmployeeById(any())).thenReturn(isNull());
 
         Assertions.assertThrows(IncorrectEmployeeIdException.class,
-                () -> employeeServiceMock.editEmployees(any()));
+                () -> employeeServiceMock.editEmployees(expected));
+
+        employeeServiceMock.editEmployees(expected);
+        verify(employeeRepository, only()).findEmployeeById(1);
+
     }
 
 
@@ -134,8 +138,7 @@ class WebLibraryApplicationTests {
                 .map(this::employeeDTO)
                 .collect(Collectors.toList());
 
-        when(employeeServiceMock.findAll(PageRequest.of(any(), 5))).thenReturn(expected);
-        verify(employeeRepository, only()).findAll();
+        when(employeeServiceMock.findAll(PageRequest.of(1, 5))).thenReturn(expected);
     }
 
 
