@@ -6,12 +6,18 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import ru.skypro.lessons.springboot.weblibrary.dto.EmployeeDTO;
 import ru.skypro.lessons.springboot.weblibrary.entity.Employee;
 import ru.skypro.lessons.springboot.weblibrary.entity.Position;
@@ -23,6 +29,7 @@ import ru.skypro.lessons.springboot.weblibrary.service.EmployeeService;
 import ru.skypro.lessons.springboot.weblibrary.service.JsonUtil;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -88,18 +95,19 @@ class WebLibraryApplicationTests {
 
     @Test
     public void editEmployees_Test() {
-        Employee result = (generateEmployee(1, null));
+        EmployeeDTO result = employeeDTO(generateEmployee(1, null));
+        Employee expected = EmployeeMapper.toEmployee(result);
 
-        EmployeeDTO expected = employeeDTO(result);
-
-
-        when(employeeRepository.findEmployeeById(any())).thenReturn(isNull());
+        when(employeeRepository.findEmployeeById(any())).thenReturn(null);
 
         Assertions.assertThrows(IncorrectEmployeeIdException.class,
-                () -> employeeServiceMock.editEmployees(expected));
+                () -> employeeServiceMock.editEmployees(result));
 
-        employeeServiceMock.editEmployees(expected);
+        when(employeeRepository.save(expected)).thenReturn(null);
+
         verify(employeeRepository, only()).findEmployeeById(1);
+        verify(employeeRepository, only()).save(expected);
+        employeeServiceMock.editEmployees(result);
 
     }
 
@@ -134,11 +142,16 @@ class WebLibraryApplicationTests {
                 .map(id -> generateEmployee(id, id + 100))
                 .limit(5)
                 .toList();
+
         List<EmployeeDTO> expected = employees.stream()
                 .map(this::employeeDTO)
                 .collect(Collectors.toList());
 
-        when(employeeServiceMock.findAll(PageRequest.of(1, 5))).thenReturn(expected);
+        Page<Employee> page = employeeRepository.findAll(Pageable.ofSize(5));
+
+        when(employeeRepository.findAll(PageRequest.of(1, 5))).thenReturn(page);
+        employeeServiceMock.findAll((PageRequest) expected);
+
     }
 
 
@@ -170,4 +183,5 @@ class WebLibraryApplicationTests {
         );
         return employeeDTO;
     }
+
 }
