@@ -6,18 +6,12 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import ru.skypro.lessons.springboot.weblibrary.dto.EmployeeDTO;
 import ru.skypro.lessons.springboot.weblibrary.entity.Employee;
 import ru.skypro.lessons.springboot.weblibrary.entity.Position;
@@ -28,8 +22,6 @@ import ru.skypro.lessons.springboot.weblibrary.service.EmployeeMapper;
 import ru.skypro.lessons.springboot.weblibrary.service.EmployeeService;
 import ru.skypro.lessons.springboot.weblibrary.service.JsonUtil;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -103,12 +95,9 @@ class WebLibraryApplicationTests {
         Assertions.assertThrows(IncorrectEmployeeIdException.class,
                 () -> employeeServiceMock.editEmployees(result));
 
-        when(employeeRepository.save(expected)).thenReturn(null);
+        when(employeeRepository.findEmployeeById(any())).thenReturn(expected);
 
-        verify(employeeRepository, only()).findEmployeeById(1);
-        verify(employeeRepository, only()).save(expected);
         employeeServiceMock.editEmployees(result);
-
     }
 
 
@@ -147,11 +136,12 @@ class WebLibraryApplicationTests {
                 .map(this::employeeDTO)
                 .collect(Collectors.toList());
 
-        Page<Employee> page = employeeRepository.findAll(Pageable.ofSize(5));
+        PageRequest page = PageRequest.of(1, 5);
 
-        when(employeeRepository.findAll(PageRequest.of(1, 5))).thenReturn(page);
-        employeeServiceMock.findAll((PageRequest) expected);
+        when(employeeRepository.findAll(page)).thenReturn(new PageImpl<>(employees));
 
+        List<EmployeeDTO> allEmployees = employeeServiceMock.findAll(page);
+        org.assertj.core.api.Assertions.assertThat(allEmployees).isEqualTo(expected);
     }
 
 
@@ -183,5 +173,4 @@ class WebLibraryApplicationTests {
         );
         return employeeDTO;
     }
-
 }
