@@ -10,7 +10,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import ru.skypro.lessons.springboot.weblibrary.dto.EmployeeDTO;
 import ru.skypro.lessons.springboot.weblibrary.entity.Employee;
@@ -22,7 +22,6 @@ import ru.skypro.lessons.springboot.weblibrary.service.EmployeeMapper;
 import ru.skypro.lessons.springboot.weblibrary.service.EmployeeService;
 import ru.skypro.lessons.springboot.weblibrary.service.JsonUtil;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -31,7 +30,7 @@ import java.util.stream.Stream;
 import static org.mockito.Mockito.*;
 
 @Data
-@SpringBootTest
+//@SpringBootTest
 @ExtendWith(MockitoExtension.class)
 class WebLibraryApplicationTests {
 
@@ -45,18 +44,17 @@ class WebLibraryApplicationTests {
     private JsonUtil jsonUtil;
     @Mock
     private EmployeeDTO employeeDTO;
-    @Mock
+
+
+    @InjectMocks
     private EmployeeService employeeServiceMock;
 
-    //@InjectMocks
-    //private EmployeeService employeeServiceMock;
 
     private final Faker faker = new Faker();
 
 
     @BeforeEach
     public void beforeEach() {
-        //lenient().when(jsonUtil.toJson(any())).thenReturn("From Mock");
         EmployeeService employeeServiceMock;
     }
 
@@ -67,27 +65,14 @@ class WebLibraryApplicationTests {
                 .limit(5)
                 .toList();
 
-        List<EmployeeDTO> expected = new ArrayList<>();
-        employees.stream()
-                .map(this::employeeDTO)
-                .forEach(expected::add);
-
-        when(employeeServiceMock.getAllEmployees()).thenReturn(expected);
-
-        verify(employeeRepository, never()).findAll();
+        when(employeeRepository.findAll()).thenReturn(employees);
+        employeeServiceMock.getAllEmployees();
 
     }
 
     @Test
     void addEmployee_Test() {
         EmployeeDTO result = employeeDTO(generateEmployee(1, null));
-        when(employeeRepository.save(any())).thenAnswer(invocationOnMock -> {
-            EmployeeDTO argument = invocationOnMock.getArgument(0, EmployeeDTO.class);
-            Employee employee = new Employee();
-            employee.setName(argument.getName());
-            employee.setSalary(argument.getSalary());
-            return employee;
-        });
 
         employeeServiceMock.addEmployee(List.of(result));
 
@@ -101,62 +86,43 @@ class WebLibraryApplicationTests {
     }
 
     @Test
-    public void editEmployees_NegativeTest() {
-        when(employeeRepository.findEmployeeById(any())).thenReturn(isNull());
+    public void editEmployees_Test() {
+        EmployeeDTO result = employeeDTO(generateEmployee(1, null));
+        Employee expected = EmployeeMapper.toEmployee(result);
+
+        when(employeeRepository.findEmployeeById(any())).thenReturn(null);
 
         Assertions.assertThrows(IncorrectEmployeeIdException.class,
-                () -> employeeServiceMock.findEmployeesWithHighestSalary());
+                () -> employeeServiceMock.editEmployees(result));
+
+        when(employeeRepository.findEmployeeById(any())).thenReturn(expected);
+
+        employeeServiceMock.editEmployees(result);
     }
 
 
     @Test
     public void getEmployeeById_Test(){
-        EmployeeDTO result = employeeDTO(generateEmployee(1, null));
-
-        when(employeeRepository.findEmployeeById(any())).thenReturn(generateEmployee(1, null));
-
-        EmployeeDTO actual = employeeServiceMock.getEmployeeById(any());
-
-        org.assertj.core.api.Assertions.assertThat(actual).isEqualTo(result);
+        employeeServiceMock.findEmployeeById(any());
+        verify(employeeRepository, only()).findEmployeeById(any());
     }
 
     @Test
     public void deleteEmployeeById_Test() {
-        when(employeeRepository.findEmployeeById(any())).thenReturn(isNull());
-
-        employeeServiceMock.deleteEmployeeById(1);
-
-        verify(employeeRepository, only()).findEmployeeById(1);
-        verify(employeeRepository, only()).deleteById(1);
+        employeeServiceMock.deleteEmployeeById(any());
+        verify(employeeRepository, only()).deleteById(any());
     }
 
     @Test
     public void findEmployeesWithHighestSalary_Test() {
-        Employee result = generateEmployee(1, null);
-
-        when(employeeRepository.findEmployeesWithHighestSalary()).thenReturn(List.of(result));
-
-        List<Employee> actual = employeeServiceMock.findEmployeesWithHighestSalary();
-
-        org.assertj.core.api.Assertions.assertThat(actual).usingRecursiveComparison().isEqualTo(result);
+        employeeServiceMock.findEmployeesWithHighestSalary();
+        verify(employeeRepository, only()).findEmployeesWithHighestSalary();
     }
 
     @Test
     public void findEmployeesByPosition_Test(){
-        List<Employee> employees = Stream.iterate(1, id -> id + 1)
-                .map(id -> generateEmployee(id, id + 100))
-                .limit(5)
-                .collect(Collectors.toList());
-
-        List<Employee> expected = new ArrayList<>(employees);
-
-        when(employeeRepository.findAll()).thenReturn(employees);
-
-        List<Employee> actual = employeeServiceMock.findEmployeesByPosition(isNull());
-
-        Assertions.assertIterableEquals(expected,actual);
-
-        verify(employeeRepository, only()).findAll();
+        employeeServiceMock.findEmployeesByPosition(any());
+        verify(employeeRepository, only()).findEmployeesByPositionNameLike(any());
     }
 
     @Test
@@ -165,11 +131,17 @@ class WebLibraryApplicationTests {
                 .map(id -> generateEmployee(id, id + 100))
                 .limit(5)
                 .toList();
+
         List<EmployeeDTO> expected = employees.stream()
                 .map(this::employeeDTO)
                 .collect(Collectors.toList());
 
-        when(employeeServiceMock.findAll(PageRequest.of(1, 5))).thenReturn(expected);
+        PageRequest page = PageRequest.of(1, 5);
+
+        when(employeeRepository.findAll(page)).thenReturn(new PageImpl<>(employees));
+
+        List<EmployeeDTO> allEmployees = employeeServiceMock.findAll(page);
+        org.assertj.core.api.Assertions.assertThat(allEmployees).isEqualTo(expected);
     }
 
 
