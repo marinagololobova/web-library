@@ -1,4 +1,4 @@
-package ru.skypro.lessons.springboot.weblibrary;
+package ru.skypro.lessons.springboot.weblibrary.service;
 
 import com.github.javafaker.Faker;
 import lombok.Data;
@@ -18,9 +18,6 @@ import ru.skypro.lessons.springboot.weblibrary.entity.Position;
 import ru.skypro.lessons.springboot.weblibrary.exceptions.IncorrectEmployeeIdException;
 import ru.skypro.lessons.springboot.weblibrary.repository.EmployeeRepository;
 import ru.skypro.lessons.springboot.weblibrary.repository.ReportRepository;
-import ru.skypro.lessons.springboot.weblibrary.service.EmployeeMapper;
-import ru.skypro.lessons.springboot.weblibrary.service.EmployeeService;
-import ru.skypro.lessons.springboot.weblibrary.service.JsonUtil;
 
 import java.util.List;
 import java.util.Optional;
@@ -30,7 +27,6 @@ import java.util.stream.Stream;
 import static org.mockito.Mockito.*;
 
 @Data
-//@SpringBootTest
 @ExtendWith(MockitoExtension.class)
 class WebLibraryApplicationTests {
 
@@ -56,6 +52,10 @@ class WebLibraryApplicationTests {
     @BeforeEach
     public void beforeEach() {
         EmployeeService employeeServiceMock;
+    }
+
+    @Test
+    void contextLoads() {
     }
 
     @Test
