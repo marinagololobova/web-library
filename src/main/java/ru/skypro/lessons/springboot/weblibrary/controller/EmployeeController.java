@@ -24,9 +24,14 @@ public class EmployeeController {
         return employeeService.getAllEmployees();
     }
 
-    @PostMapping
+    @PostMapping("/all")
     public void addEmployees(@RequestBody List<EmployeeDTO> employees) {
-        employeeService.addEmployee(employees);
+        employeeService.addEmployees(employees);
+    }
+
+    @PostMapping
+    public EmployeeDTO addEmployee(@RequestBody EmployeeDTO employee) {
+        return employeeService.addEmployee(employee);
     }
 
     @PutMapping("/{id}")
@@ -48,7 +53,7 @@ public class EmployeeController {
 
 
     @GetMapping("/withHighestSalary")
-    public List<Employee> showEmployeesSalaryMax() {
+    public List<Employee> findEmployeesWithHighestSalary(){
         return employeeService.findEmployeesWithHighestSalary();
     }
 

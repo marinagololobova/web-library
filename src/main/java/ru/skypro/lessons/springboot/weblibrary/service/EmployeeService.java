@@ -51,11 +51,17 @@ public class EmployeeService {
     }
 
 
-    public void addEmployee(List<EmployeeDTO> employees) {
+    public void addEmployees(List<EmployeeDTO> employees) {
         LOG.debug("Was invoked method for addEmployee with parameter: {}", jsonUtil.toJson(employees));
         employees.stream()
                 .map(EmployeeMapper::toEmployee)
                 .forEach(employeeRepository::save);
+    }
+
+    public EmployeeDTO addEmployee(EmployeeDTO employeeDTO) {
+        Employee employee = new Employee();
+        employee.setName(employeeDTO.getName());
+        return EmployeeMapper.fromEmployee(employeeRepository.save(employee));
     }
 
 
@@ -127,7 +133,7 @@ public class EmployeeService {
             List<EmployeeDTO> employeeDTOS = objectMapper.readValue(employees.getBytes(), new TypeReference<>() {
                     }
             );
-            addEmployee(employeeDTOS);
+            addEmployees(employeeDTOS);
         } catch (IOException e) {
             LOG.error(e.getMessage(), e);
             throw new IllegalJsonFileException();

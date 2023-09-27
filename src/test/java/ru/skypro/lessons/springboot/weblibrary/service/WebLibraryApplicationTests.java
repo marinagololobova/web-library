@@ -74,7 +74,7 @@ class WebLibraryApplicationTests {
     void addEmployee_Test() {
         EmployeeDTO result = employeeDTO(generateEmployee(1, null));
 
-        employeeServiceMock.addEmployee(List.of(result));
+        employeeServiceMock.addEmployees(List.of(result));
 
         ArgumentCaptor<Employee> captor = ArgumentCaptor.forClass(Employee.class);
         verify(employeeRepository, only()).save(captor.capture());

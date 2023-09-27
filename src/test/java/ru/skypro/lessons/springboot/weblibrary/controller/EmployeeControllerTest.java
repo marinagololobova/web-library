@@ -66,7 +66,7 @@ public class EmployeeControllerTest {
                 .collect(Collectors.toList());
 
 
-        mockMvc.perform(post(EMPLOYEES_URL)
+        mockMvc.perform(post("/employees/all")
                         .contentType(APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(employeeDTOS)))
                 .andExpect(result -> {
@@ -104,24 +104,24 @@ public class EmployeeControllerTest {
         jsonObject.put("name", "test_name");
 
         String createdUserString = mockMvc.perform(post(EMPLOYEES_URL)
-                        .contentType(MediaType.APPLICATION_JSON)
+                        .contentType(APPLICATION_JSON)
                         .content(jsonObject.toString()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").isNotEmpty())
                 .andExpect(jsonPath("$.id").isNumber())
                 .andExpect(jsonPath("$.name").value("test_name"))
                 .andReturn().getResponse().getContentAsString();
-        JSONObject createdUser = new JSONObject(Integer.parseInt(createdUserString));
 
-        Long id = (Long) createdUser.get("id");
+        EmployeeDTO employeeDTO = objectMapper.readValue(createdUserString, EmployeeDTO.class);
+        Integer id = employeeDTO.getId();
 
-        createdUser.put("name", "test_user2");
         mockMvc.perform(put("/employees/{id}", id)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(createdUser.toString()))
+                .contentType(APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(new EmployeeDTO("test_user2"))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").isNotEmpty())
                 .andExpect(jsonPath("$.id").isNumber())
+                .andExpect(jsonPath("$.id").value("1"))
                 .andExpect(jsonPath("$.name").value("test_user2"));
 
         mockMvc.perform(get(EMPLOYEES_URL))
@@ -129,6 +129,7 @@ public class EmployeeControllerTest {
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$.length()").value(1))
                 .andExpect(jsonPath("$[0].name").value("test_user2"));
+
     }
 
     @Test
@@ -144,11 +145,11 @@ public class EmployeeControllerTest {
                 .andExpect(jsonPath("$.id").isNumber())
                 .andExpect(jsonPath("$.name").value("test_name"))
                 .andReturn().getResponse().getContentAsString();
-        JSONObject createdUser = new JSONObject(Integer.parseInt(createdUserString));
-        Long id = (Long) createdUser.get("id");
+        EmployeeDTO employeeDTO = objectMapper.readValue(createdUserString, EmployeeDTO.class);
+        Integer id = employeeDTO.getId();
 
         mockMvc.perform(delete("/employees/{id}", id))
-                .andExpect(status().isNoContent());
+                .andExpect(status().isOk());
 
         mockMvc.perform(get(EMPLOYEES_URL))
                 .andExpect(status().isOk())
