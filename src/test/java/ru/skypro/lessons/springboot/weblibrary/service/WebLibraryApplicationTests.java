@@ -1,4 +1,4 @@
-package ru.skypro.lessons.springboot.weblibrary;
+package ru.skypro.lessons.springboot.weblibrary.service;
 
 import com.github.javafaker.Faker;
 import lombok.Data;
@@ -18,9 +18,6 @@ import ru.skypro.lessons.springboot.weblibrary.entity.Position;
 import ru.skypro.lessons.springboot.weblibrary.exceptions.IncorrectEmployeeIdException;
 import ru.skypro.lessons.springboot.weblibrary.repository.EmployeeRepository;
 import ru.skypro.lessons.springboot.weblibrary.repository.ReportRepository;
-import ru.skypro.lessons.springboot.weblibrary.service.EmployeeMapper;
-import ru.skypro.lessons.springboot.weblibrary.service.EmployeeService;
-import ru.skypro.lessons.springboot.weblibrary.service.JsonUtil;
 
 import java.util.List;
 import java.util.Optional;
@@ -30,7 +27,6 @@ import java.util.stream.Stream;
 import static org.mockito.Mockito.*;
 
 @Data
-//@SpringBootTest
 @ExtendWith(MockitoExtension.class)
 class WebLibraryApplicationTests {
 
@@ -59,6 +55,10 @@ class WebLibraryApplicationTests {
     }
 
     @Test
+    void contextLoads() {
+    }
+
+    @Test
     public void getAllEmployees_Test() {
         List<Employee> employees = Stream.iterate(1, id -> id + 1)
                 .map(id -> generateEmployee(id, id + 100))
@@ -74,7 +74,7 @@ class WebLibraryApplicationTests {
     void addEmployee_Test() {
         EmployeeDTO result = employeeDTO(generateEmployee(1, null));
 
-        employeeServiceMock.addEmployee(List.of(result));
+        employeeServiceMock.addEmployees(List.of(result));
 
         ArgumentCaptor<Employee> captor = ArgumentCaptor.forClass(Employee.class);
         verify(employeeRepository, only()).save(captor.capture());

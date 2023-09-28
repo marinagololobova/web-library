@@ -11,18 +11,20 @@ import java.util.Optional;
 public class EmployeeMapper {
     public static EmployeeDTO fromEmployee(Employee employee) {
         EmployeeDTO employeeDTO = new EmployeeDTO();
+        employeeDTO.setId(employee.getId());
         employeeDTO.setName(employee.getName());
         employeeDTO.setSalary(employee.getSalary());
-        employeeDTO.setPosition(
+        /*employeeDTO.setPosition(
                 Optional.ofNullable(employee.getPosition())
                         .map(Position::getName)
                         .orElse(null)
-        );
+        );*/
         return employeeDTO;
     }
 
     public static Employee toEmployee(EmployeeDTO employeeDTO) {
         Employee employee = new Employee();
+        employee.setId(employeeDTO.getId());
         employee.setName(employeeDTO.getName());
         employee.setSalary(employeeDTO.getSalary());
         return employee;

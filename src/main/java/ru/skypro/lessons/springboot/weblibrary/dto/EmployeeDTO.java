@@ -15,6 +15,9 @@ public class EmployeeDTO {
     private Integer salary;
     private String position;
 
+    public EmployeeDTO(String name) {
+        this.name = name;
+    }
 
     @Override
     public boolean equals(Object o) {
